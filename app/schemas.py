@@ -1,9 +1,40 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
+from pydantic import BaseModel, Field
 
-from pydantic import BaseModel, Field, ConfigDict
+
+# --- Пользователи ---
+class UserCreate(BaseModel):
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+    role: str = Field(default="user", pattern="^(user|admin)$")
 
 
+class UserUpdate(BaseModel):
+    username: Optional[str] = Field(None, min_length=3, max_length=50)
+    password: Optional[str] = Field(None, min_length=6)
+
+
+class UserResponse(BaseModel):
+    id: int
+    username: str
+    role: str
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+# --- Авторизация ---
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+class TokenResponse(BaseModel):
+    token: str
+
+
+# --- Объявления ---
 class AdvertisementCreate(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     description: str = Field(..., min_length=1)
@@ -25,5 +56,6 @@ class AdvertisementResponse(BaseModel):
     price: float
     author: str
     created_at: datetime
+    owner_id: int
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = {"from_attributes": True}
